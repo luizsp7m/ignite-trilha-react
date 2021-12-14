@@ -8,8 +8,6 @@ import { signIn, signOut, useSession } from 'next-auth/react';
 export function SignInButton() {
   const { data: session  } = useSession();
 
-  console.log(session);
-
   return session ? (
     <button className={styles.signInButton} type="button">
       <FaGithub color="#04d301" />
