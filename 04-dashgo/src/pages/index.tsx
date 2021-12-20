@@ -37,6 +37,8 @@ export default function SignIn() {
           mt={6}
           colorScheme="pink"
           size="lg"
+          fontSize="md"
+          fontWeight="semibold"
         >
           Entrar</Button>
       </Flex>
