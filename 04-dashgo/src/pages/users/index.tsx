@@ -1,11 +1,33 @@
-import { Box, Button, Checkbox, Flex, Heading, Icon, Table, Tbody, Td, Text, Th, Thead, Tr, useBreakpointValue } from "@chakra-ui/react";
+import { Box, Button, Checkbox, Flex, Heading, Icon, Spinner, Table, Tbody, Td, Text, Th, Thead, Tr, useBreakpointValue } from "@chakra-ui/react";
 import Link from "next/link";
+import { useEffect } from "react";
 import { RiAddLine, RiPencilLine } from "react-icons/ri";
 import { Header } from "../../components/Header";
 import { Pagination } from "../../components/Pagination";
 import { Sibebar } from "../../components/Sidebar";
+import { useQuery } from 'react-query';
 
 export default function UserList() {
+  const { data, isLoading, error } = useQuery('users', async () => {
+    const response = await fetch('http://localhost:3000/api/users');
+    const data = await response.json();
+
+    const users = data.users.map(user => {
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        createdAt: new Date(user.createdAt).toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric'
+        }),
+      }
+    });
+
+    return users;
+  });
+
   const isWideVersion = useBreakpointValue({
     base: false,
     lg: true,
@@ -31,44 +53,58 @@ export default function UserList() {
             </Link>
           </Flex>
 
-          <Table colorScheme="whiteAlpha">
-            <Thead>
-              <Tr>
-                <Th px={["4", "4", "6"]} color="gray.300" width="8">
-                  <Checkbox colorScheme="pink" />
-                </Th>
+          {isLoading ? (
+            <Flex justify="center">
+              <Spinner />
+            </Flex>
+          ) : error ? (
+            <Flex justify="center">
+              <Text>Falha ao obter dados dos usuários</Text>
+            </Flex>
+          ) : (
+            <>
+              <Table colorScheme="whiteAlpha">
+                <Thead>
+                  <Tr>
+                    <Th px={["4", "4", "6"]} color="gray.300" width="8">
+                      <Checkbox colorScheme="pink" />
+                    </Th>
 
-                <Th>Usuário</Th>
-                {isWideVersion && <Th>Data de cadastro</Th>}
-                <Th></Th>
-              </Tr>
-            </Thead>
+                    <Th>Usuário</Th>
+                    {isWideVersion && <Th>Data de cadastro</Th>}
+                    <Th></Th>
+                  </Tr>
+                </Thead>
 
-            <Tbody>
-              <Tr>
-                <Td px={["4", "4", "6"]}>
-                  <Checkbox colorScheme="pink" />
-                </Td>
+                <Tbody>
+                  {data.map(user => (
+                    <Tr key={user.id}>
+                      <Td px={["4", "4", "6"]}>
+                        <Checkbox colorScheme="pink" />
+                      </Td>
 
-                <Td>
-                  <Box>
-                    <Text fontWeight="bold">Luiz Oliveira</Text>
-                    <Text fontWeight="small" color="gray.300">luizoliveira2808@gmail.com</Text>
-                  </Box>
-                </Td>
+                      <Td>
+                        <Box>
+                          <Text fontWeight="bold">{user.name}</Text>
+                          <Text fontWeight="small" color="gray.300">{user.email}</Text>
+                        </Box>
+                      </Td>
 
-                {isWideVersion && <Td>20 de dezembro, 2021</Td>}
+                      {isWideVersion && <Td>{user.createdAt}</Td>}
 
-                <Td textAlign="right">
-                  <Button size="md" fontSize="sm" colorScheme="purple">
-                    <Icon as={RiPencilLine} fontSize="18" />
-                  </Button>
-                </Td>
-              </Tr>
-            </Tbody>
-          </Table>
+                      <Td textAlign="right">
+                        <Button size="md" fontSize="sm" colorScheme="purple">
+                          <Icon as={RiPencilLine} fontSize="18" />
+                        </Button>
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
 
-          <Pagination />
+              <Pagination />
+            </>
+          )}
         </Box>
       </Flex>
     </Box>
